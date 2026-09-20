@@ -910,7 +910,7 @@ def main():
     branch_name = state.get("branch_name")
     if branch_name:
         # Try to checkout existing branch
-        result = subprocess.run(["git", "checkout", branch_name], capture_output=True, text=True)
+        result = subprocess.run(["git", "checkout", branch_name], capture_output=True, text=True, encoding="utf-8", errors="replace")
         if result.returncode != 0:
             logger.error(f"Failed to checkout branch {branch_name}: {result.stderr}")
             make_issue_comment(

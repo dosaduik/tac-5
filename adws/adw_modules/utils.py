@@ -44,10 +44,16 @@ def setup_logger(adw_id: str, trigger_type: str = "adw_plan_build") -> logging.L
     logger.handlers.clear()
     
     # File handler - captures everything
-    file_handler = logging.FileHandler(log_file, mode='a')
+    file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
     file_handler.setLevel(logging.DEBUG)
     
     # Console handler - INFO and above
+    # Console: force UTF-8 so emoji in log messages don't crash the handler
+    # on Windows, where sys.stdout defaults to cp1252.
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, ValueError):
+        pass
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
     

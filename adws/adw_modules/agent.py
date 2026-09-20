@@ -25,7 +25,7 @@ def check_claude_installed() -> Optional[str]:
     """Check if Claude Code CLI is installed. Return error message if not."""
     try:
         result = subprocess.run(
-            [CLAUDE_PATH, "--version"], capture_output=True, text=True
+            [CLAUDE_PATH, "--version"], capture_output=True, text=True, encoding="utf-8", errors="replace"
         )
         if result.returncode != 0:
             return (
@@ -45,7 +45,7 @@ def parse_jsonl_output(
         Tuple of (all_messages, result_message) where result_message is None if not found
     """
     try:
-        with open(output_file, "r") as f:
+        with open(output_file, "r", encoding="utf-8") as f:
             # Read all lines and parse each as JSON
             messages = [json.loads(line) for line in f if line.strip()]
 
@@ -78,7 +78,7 @@ def convert_jsonl_to_json(jsonl_file: str) -> str:
     messages, _ = parse_jsonl_output(jsonl_file)
 
     # Write as JSON array
-    with open(json_file, "w") as f:
+    with open(json_file, "w", encoding="utf-8") as f:
         json.dump(messages, f, indent=2)
 
     print(f"Created JSON file: {json_file}")
@@ -128,8 +128,12 @@ def get_claude_env() -> Dict[str, str]:
         required_env_vars["GITHUB_PAT"] = github_pat
         required_env_vars["GH_TOKEN"] = github_pat  # Claude Code uses GH_TOKEN
 
-    # Filter out None values
-    return {k: v for k, v in required_env_vars.items() if v is not None}
+    # Start from the full parent environment so platform-essential variables
+    # (SystemRoot, APPDATA, USERPROFILE, TEMP on Windows) survive; a minimal
+    # env breaks the TLS/DNS stack and the claude CLI cannot connect.
+    env = os.environ.copy()
+    env.update({k: v for k, v in required_env_vars.items() if v is not None})
+    return env
 
 
 def save_prompt(prompt: str, adw_id: str, agent_name: str = "ops") -> None:
@@ -151,7 +155,7 @@ def save_prompt(prompt: str, adw_id: str, agent_name: str = "ops") -> None:
 
     # Save prompt to file
     prompt_file = os.path.join(prompt_dir, f"{command_name}.txt")
-    with open(prompt_file, "w") as f:
+    with open(prompt_file, "w", encoding="utf-8") as f:
         f.write(prompt)
 
     print(f"Saved prompt to: {prompt_file}")
@@ -188,9 +192,9 @@ def prompt_claude_code(request: AgentPromptRequest) -> AgentPromptResponse:
 
     try:
         # Execute Claude Code and pipe output to file
-        with open(request.output_file, "w") as f:
+        with open(request.output_file, "w", encoding="utf-8") as f:
             result = subprocess.run(
-                cmd, stdout=f, stderr=subprocess.PIPE, text=True, env=env
+                cmd, stdout=f, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace", env=env
             )
 
         if result.returncode == 0:
@@ -224,7 +228,7 @@ def prompt_claude_code(request: AgentPromptRequest) -> AgentPromptResponse:
                 )
             else:
                 # No result message found, return raw output
-                with open(request.output_file, "r") as f:
+                with open(request.output_file, "r", encoding="utf-8") as f:
                     raw_output = f.read()
                 return AgentPromptResponse(
                     output=raw_output, success=True, session_id=None
