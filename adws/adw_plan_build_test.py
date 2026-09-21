@@ -23,10 +23,14 @@ import os
 # Add the parent directory to Python path to import modules
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from adw_modules.workflow_ops import ensure_adw_id
+from adw_modules.utils import configure_utf8_io
 
 
 def main():
     """Main entry point."""
+    # Make stdout/stderr and child processes UTF-8 safe (Windows)
+    configure_utf8_io()
+
     if len(sys.argv) < 2:
         print("Usage: uv run adw_plan_build_test.py <issue-number> [adw-id]")
         sys.exit(1)

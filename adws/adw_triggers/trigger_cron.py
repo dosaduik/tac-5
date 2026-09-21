@@ -33,8 +33,10 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from adw_modules.github import fetch_open_issues, fetch_issue_comments, get_repo_url, extract_repo_path
+from adw_modules.utils import configure_utf8_io
 
 # Load environment variables from current or parent directories
+configure_utf8_io()
 load_dotenv()
 
 # Optional environment variables
@@ -108,6 +110,8 @@ def trigger_adw_workflow(issue_number: int) -> bool:
             cmd,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             cwd=script_path.parent
         )
         

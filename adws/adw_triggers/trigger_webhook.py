@@ -28,12 +28,13 @@ import uvicorn
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from adw_modules.utils import make_adw_id, setup_logger
+from adw_modules.utils import make_adw_id, setup_logger, configure_utf8_io
 from adw_modules.github import make_issue_comment
 from adw_modules.workflow_ops import extract_adw_info
 from adw_modules.state import ADWState
 
 # Load environment variables
+configure_utf8_io()
 load_dotenv()
 
 # Configuration
@@ -209,6 +210,8 @@ async def health():
             ["uv", "run", health_check_script],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=30,
             cwd=os.path.dirname(script_dir)  # Run from adws directory
         )

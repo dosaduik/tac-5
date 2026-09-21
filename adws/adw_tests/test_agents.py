@@ -20,9 +20,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from adw_modules.data_types import AgentPromptRequest, AgentPromptResponse
 from adw_modules.agent import prompt_claude_code
-from adw_modules.utils import make_adw_id
+from adw_modules.utils import make_adw_id, configure_utf8_io
 
 # Load environment variables
+configure_utf8_io()
 load_dotenv()
 
 # Test configuration

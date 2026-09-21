@@ -43,7 +43,7 @@ from adw_modules.workflow_ops import (
     ensure_adw_id,
     AGENT_PLANNER,
 )
-from adw_modules.utils import setup_logger
+from adw_modules.utils import setup_logger, configure_utf8_io
 from adw_modules.data_types import GitHubIssue, IssueClassSlashCommand
 
 
@@ -70,6 +70,9 @@ def check_env_vars(logger: Optional[logging.Logger] = None) -> None:
 
 def main():
     """Main entry point."""
+    # Make stdout/stderr and child processes UTF-8 safe (Windows)
+    configure_utf8_io()
+
     # Load environment variables
     load_dotenv()
 

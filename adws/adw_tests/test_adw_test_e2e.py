@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from adw_test import run_e2e_tests_with_resolution
 from adw_modules.data_types import E2ETestResult
-from adw_modules.utils import make_adw_id, setup_logger
+from adw_modules.utils import make_adw_id, setup_logger, configure_utf8_io
 
 
 def test_e2e_workflow(issue_number: str):
@@ -85,6 +85,9 @@ def test_e2e_workflow(issue_number: str):
 
 def main():
     """Run all tests."""
+    # Make stdout/stderr and child processes UTF-8 safe (Windows)
+    configure_utf8_io()
+
     # Parse command line arguments
     if len(sys.argv) < 2:
         print("Usage: uv run test_adw_test_e2e.py <issue-number>")

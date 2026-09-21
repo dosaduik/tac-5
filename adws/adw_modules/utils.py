@@ -17,6 +17,26 @@ def make_adw_id() -> str:
     return str(uuid.uuid4())[:8]
 
 
+def configure_utf8_io() -> None:
+    """Force UTF-8 on this process's stdout/stderr and on child processes.
+
+    On Windows both default to the ANSI code page (cp1252), so the moment
+    output is redirected to a pipe or a file - which is what every ADW script
+    does when it spawns another script or captures agent output - emoji in log
+    lines blow up with UnicodeEncodeError/UnicodeDecodeError and kill the run.
+
+    Call this once, as early as possible, in every entry-point script.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="replace")
+
+    # Inherited by child processes (adw_plan.py, adw_build.py, claude, gh, ...)
+    os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+    os.environ.setdefault("PYTHONUTF8", "1")
+
+
 def setup_logger(adw_id: str, trigger_type: str = "adw_plan_build") -> logging.Logger:
     """Set up logger that writes to both console and file using adw_id.
     
@@ -44,7 +64,7 @@ def setup_logger(adw_id: str, trigger_type: str = "adw_plan_build") -> logging.L
     logger.handlers.clear()
     
     # File handler - captures everything
-    file_handler = logging.FileHandler(log_file, mode='a')
+    file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
     file_handler.setLevel(logging.DEBUG)
     
     # Console handler - INFO and above

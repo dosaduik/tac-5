@@ -16,7 +16,7 @@ def get_current_branch() -> str:
     """Get current git branch name."""
     result = subprocess.run(
         ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-        capture_output=True, text=True
+        capture_output=True, text=True, encoding="utf-8", errors="replace"
     )
     return result.stdout.strip()
 
@@ -25,7 +25,7 @@ def push_branch(branch_name: str) -> Tuple[bool, Optional[str]]:
     """Push current branch to remote. Returns (success, error_message)."""
     result = subprocess.run(
         ["git", "push", "-u", "origin", branch_name],
-        capture_output=True, text=True
+        capture_output=True, text=True, encoding="utf-8", errors="replace"
     )
     if result.returncode != 0:
         return False, result.stderr
@@ -43,7 +43,7 @@ def check_pr_exists(branch_name: str) -> Optional[str]:
     
     result = subprocess.run(
         ["gh", "pr", "list", "--repo", repo_path, "--head", branch_name, "--json", "url"],
-        capture_output=True, text=True
+        capture_output=True, text=True, encoding="utf-8", errors="replace"
     )
     if result.returncode == 0:
         prs = json.loads(result.stdout)
@@ -57,7 +57,7 @@ def create_branch(branch_name: str) -> Tuple[bool, Optional[str]]:
     # Create branch
     result = subprocess.run(
         ["git", "checkout", "-b", branch_name],
-        capture_output=True, text=True
+        capture_output=True, text=True, encoding="utf-8", errors="replace"
     )
     if result.returncode != 0:
         # Check if error is because branch already exists
@@ -65,7 +65,7 @@ def create_branch(branch_name: str) -> Tuple[bool, Optional[str]]:
             # Try to checkout existing branch
             result = subprocess.run(
                 ["git", "checkout", branch_name],
-                capture_output=True, text=True
+                capture_output=True, text=True, encoding="utf-8", errors="replace"
             )
             if result.returncode != 0:
                 return False, result.stderr
@@ -77,19 +77,19 @@ def create_branch(branch_name: str) -> Tuple[bool, Optional[str]]:
 def commit_changes(message: str) -> Tuple[bool, Optional[str]]:
     """Stage all changes and commit. Returns (success, error_message)."""
     # Check if there are changes to commit
-    result = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
+    result = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True, encoding="utf-8", errors="replace")
     if not result.stdout.strip():
         return True, None  # No changes to commit
     
     # Stage all changes
-    result = subprocess.run(["git", "add", "-A"], capture_output=True, text=True)
+    result = subprocess.run(["git", "add", "-A"], capture_output=True, text=True, encoding="utf-8", errors="replace")
     if result.returncode != 0:
         return False, result.stderr
     
     # Commit
     result = subprocess.run(
         ["git", "commit", "-m", message],
-        capture_output=True, text=True
+        capture_output=True, text=True, encoding="utf-8", errors="replace"
     )
     if result.returncode != 0:
         return False, result.stderr

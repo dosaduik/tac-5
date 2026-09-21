@@ -44,7 +44,7 @@ from adw_modules.github import (
     make_issue_comment,
     get_repo_url,
 )
-from adw_modules.utils import make_adw_id, setup_logger, parse_json
+from adw_modules.utils import make_adw_id, setup_logger, parse_json, configure_utf8_io
 from adw_modules.state import ADWState
 from adw_modules.git_ops import commit_changes, finalize_git_operations
 from adw_modules.workflow_ops import format_issue_message, create_commit, ensure_adw_id, classify_issue
@@ -866,6 +866,9 @@ def run_e2e_tests_with_resolution(
 
 def main():
     """Main entry point."""
+    # Make stdout/stderr and child processes UTF-8 safe (Windows)
+    configure_utf8_io()
+
     # Load environment variables
     load_dotenv()
 
@@ -910,7 +913,7 @@ def main():
     branch_name = state.get("branch_name")
     if branch_name:
         # Try to checkout existing branch
-        result = subprocess.run(["git", "checkout", branch_name], capture_output=True, text=True)
+        result = subprocess.run(["git", "checkout", branch_name], capture_output=True, text=True, encoding="utf-8", errors="replace")
         if result.returncode != 0:
             logger.error(f"Failed to checkout branch {branch_name}: {result.stderr}")
             make_issue_comment(

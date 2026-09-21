@@ -33,7 +33,7 @@ from adw_modules.workflow_ops import (
     format_issue_message,
     AGENT_IMPLEMENTOR,
 )
-from adw_modules.utils import setup_logger
+from adw_modules.utils import setup_logger, configure_utf8_io
 from adw_modules.data_types import GitHubIssue
 
 
@@ -60,6 +60,9 @@ def check_env_vars(logger: Optional[logging.Logger] = None) -> None:
 
 def main():
     """Main entry point."""
+    # Make stdout/stderr and child processes UTF-8 safe (Windows)
+    configure_utf8_io()
+
     # Load environment variables
     load_dotenv()
     
@@ -132,7 +135,7 @@ def main():
     
     # Checkout the branch from state
     branch_name = state.get("branch_name")
-    result = subprocess.run(["git", "checkout", branch_name], capture_output=True, text=True)
+    result = subprocess.run(["git", "checkout", branch_name], capture_output=True, text=True, encoding="utf-8", errors="replace")
     if result.returncode != 0:
         logger.error(f"Failed to checkout branch {branch_name}: {result.stderr}")
         make_issue_comment(

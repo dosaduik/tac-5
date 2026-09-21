@@ -38,8 +38,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import git repo functions from github module
 from adw_modules.github import get_repo_url, extract_repo_path, make_issue_comment
+from adw_modules.utils import configure_utf8_io
 
 # Load environment variables
+configure_utf8_io()
 load_dotenv()
 
 
@@ -138,7 +140,7 @@ def check_claude_code() -> CheckResult:
     # First check if Claude Code is installed
     try:
         result = subprocess.run(
-            [claude_path, "--version"], capture_output=True, text=True
+            [claude_path, "--version"], capture_output=True, text=True, encoding="utf-8", errors="replace"
         )
         if result.returncode != 0:
             return CheckResult(
@@ -179,9 +181,9 @@ def check_claude_code() -> CheckResult:
             "--dangerously-skip-permissions",
         ]
 
-        with open(output_file, "w") as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             result = subprocess.run(
-                cmd, stdout=f, stderr=subprocess.PIPE, text=True, env=env, timeout=30
+                cmd, stdout=f, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace", env=env, timeout=30
             )
 
         if result.returncode != 0:
@@ -194,7 +196,7 @@ def check_claude_code() -> CheckResult:
         response_text = ""
 
         try:
-            with open(output_file, "r") as f:
+            with open(output_file, "r", encoding="utf-8") as f:
                 for line in f:
                     if line.strip():
                         msg = json.loads(line)
@@ -227,7 +229,7 @@ def check_github_cli() -> CheckResult:
     """Check if GitHub CLI is installed and authenticated."""
     try:
         # Check if gh is installed
-        result = subprocess.run(["gh", "--version"], capture_output=True, text=True)
+        result = subprocess.run(["gh", "--version"], capture_output=True, text=True, encoding="utf-8", errors="replace")
         if result.returncode != 0:
             return CheckResult(success=False, error="GitHub CLI (gh) is not installed")
 
@@ -237,7 +239,7 @@ def check_github_cli() -> CheckResult:
             env["GH_TOKEN"] = os.getenv("GITHUB_PAT")
 
         result = subprocess.run(
-            ["gh", "auth", "status"], capture_output=True, text=True, env=env
+            ["gh", "auth", "status"], capture_output=True, text=True, encoding="utf-8", errors="replace", env=env
         )
 
         authenticated = result.returncode == 0
