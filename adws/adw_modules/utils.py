@@ -12,6 +12,28 @@ from typing import Any, TypeVar, Type, Union
 T = TypeVar('T')
 
 
+def _force_utf8_streams() -> None:
+    """Make stdout/stderr UTF-8 so emoji in log messages don't crash logging.
+
+    On Windows the console defaults to cp1252, and any log line containing an
+    emoji raises UnicodeEncodeError inside the logging handler.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (ValueError, OSError):
+                # Stream is already detached or not reconfigurable (e.g. it has
+                # been replaced by a non-text object). Nothing to do.
+                pass
+
+
+# Applied at import so plain print() calls with emoji are safe too, not just
+# the ones that happen to run after setup_logger().
+_force_utf8_streams()
+
+
 def make_adw_id() -> str:
     """Generate a short 8-character UUID for ADW tracking."""
     return str(uuid.uuid4())[:8]
@@ -27,6 +49,8 @@ def setup_logger(adw_id: str, trigger_type: str = "adw_plan_build") -> logging.L
     Returns:
         Configured logger instance
     """
+    _force_utf8_streams()
+
     # Create log directory: agents/{adw_id}/adw_plan_build/
     # __file__ is in adws/adw_modules/, so we need to go up 3 levels to get to project root
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -44,7 +68,7 @@ def setup_logger(adw_id: str, trigger_type: str = "adw_plan_build") -> logging.L
     logger.handlers.clear()
     
     # File handler - captures everything
-    file_handler = logging.FileHandler(log_file, mode='a')
+    file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
     file_handler.setLevel(logging.DEBUG)
     
     # Console handler - INFO and above

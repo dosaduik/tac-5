@@ -397,7 +397,7 @@ def find_existing_branch_for_issue(issue_number: str, adw_id: Optional[str] = No
     result = subprocess.run(
         ["git", "branch", "-a"],
         capture_output=True,
-        text=True
+        text=True, encoding="utf-8", errors="replace"
     )
     
     if result.returncode != 0:
@@ -472,11 +472,11 @@ def create_or_find_branch(
         from adw_modules.git_ops import get_current_branch
         current = get_current_branch()
         if current != branch_name:
-            result = subprocess.run(["git", "checkout", branch_name], capture_output=True, text=True)
+            result = subprocess.run(["git", "checkout", branch_name], capture_output=True, text=True, encoding="utf-8", errors="replace")
             if result.returncode != 0:
                 # Branch might not exist locally, try to create from remote
                 result = subprocess.run(["git", "checkout", "-b", branch_name, f"origin/{branch_name}"], 
-                                      capture_output=True, text=True)
+                                      capture_output=True, text=True, encoding="utf-8", errors="replace")
                 if result.returncode != 0:
                     return "", f"Failed to checkout branch: {result.stderr}"
         return branch_name, None
@@ -487,7 +487,7 @@ def create_or_find_branch(
     if existing_branch:
         logger.info(f"Found existing branch: {existing_branch}")
         # Checkout the branch
-        result = subprocess.run(["git", "checkout", existing_branch], capture_output=True, text=True)
+        result = subprocess.run(["git", "checkout", existing_branch], capture_output=True, text=True, encoding="utf-8", errors="replace")
         if result.returncode != 0:
             return "", f"Failed to checkout branch: {result.stderr}"
         state.update(branch_name=existing_branch)

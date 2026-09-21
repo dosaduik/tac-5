@@ -208,7 +208,7 @@ async def health():
         result = subprocess.run(
             ["uv", "run", health_check_script],
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8", errors="replace",
             timeout=30,
             cwd=os.path.dirname(script_dir)  # Run from adws directory
         )

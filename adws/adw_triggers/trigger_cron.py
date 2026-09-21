@@ -107,7 +107,7 @@ def trigger_adw_workflow(issue_number: int) -> bool:
         result = subprocess.run(
             cmd,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8", errors="replace",
             cwd=script_path.parent
         )
         

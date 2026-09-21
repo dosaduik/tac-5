@@ -65,7 +65,7 @@ class ADWState:
         )
 
         # Save as JSON
-        with open(state_path, "w") as f:
+        with open(state_path, "w", encoding="utf-8") as f:
             json.dump(state_data.model_dump(), f, indent=2)
 
         self.logger.info(f"Saved state to {state_path}")
@@ -86,7 +86,7 @@ class ADWState:
             return None
 
         try:
-            with open(state_path, "r") as f:
+            with open(state_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
             # Validate with ADWStateData
